@@ -22,6 +22,9 @@ The rename changed the column, not the values.
 2023-07-01. Stations went up (756 → 769); rows per station per day fell
 (8.0 → 6.0).
 
+Reproduce: `model/investigations/01_station_ids_stable.py` (the ids) and
+`02_row_drop_cause.py` (the row drop).
+
 ## 2. Fare categories map across 2023 with three levels of confidence
 
 Matched by share of validations either side of the change, not by name.
@@ -34,6 +37,8 @@ Recorded in `fare_categories.csv` with the evidence for each line.
 
 Totals are comparable across the change; per-category trends are only as
 good as the mapping.
+
+Reproduce: `model/investigations/03_ticket_shares_2023.py`.
 
 ## 3. Station and line identity comes from IDs, never names
 
@@ -59,6 +64,8 @@ for matching.
 | unknown line (IDFM's marker) | 9.3% |
 | not in current reference | 2.5% |
 
+Reproduce: `model/investigations/04_match_coverage.py`.
+
 ## 4. Today's references name the past well enough
 
 GTFS covers 2026-09-24 → 2026-10-26, after the validation data ends. It was
@@ -71,12 +78,15 @@ So current GTFS (stations) and the current line reference (lines) are used
 for all years. Names shown are today's names; the name used at the time is
 kept in `validation_name`. GTFS timetables are not used.
 
+Reproduce: `model/investigations/05_reference_coverage_by_year.py`.
+
 ## 5. Known defects are data, not footnotes
 
 `quality_flags.csv` lists every defect that changes what a number means,
 each with its period, what it affects, and a SQL condition. The build
 checks each flag against the data and stops if a flag matches nothing or
-matches rows outside its stated period.
+matches rows outside its stated period. Checked by
+`model/build_quality_flags.py` on every build.
 
 | Defect | Affects | Scale |
 |---|---|---|
@@ -98,17 +108,20 @@ A profile should add up to 100%. Measured:
 | | Profiles | Add up to 99-101% | Over 101% | Under 99% |
 |---|---|---|---|---|
 | Rail | 94,772 | 99.8% | 149 | 84 |
-| Bus and tram | 147,371 | 97.7% | 3,004 | 353 |
+| Bus and tram | 147,371 | 97.7% | 3,004 | 349 |
 
 Over 101% almost always means several profiles stacked under one key, with
 the same hour listed more than once (e.g. Porte de Clichy, up to 845%). Under
 99% means hours are missing. Neither can be repaired, so every row is kept,
 `profile_ok` marks the usable ones, and a warning covers the rest.
 
-Splitting profiles by operator was tried and changed nothing (99.8% either
-way), so that was not the cause.
+Splitting profiles by operator was tried: it separated 44 of the 149 stacked
+rail profiles, but the share that add up stayed at 99.8%, so operators are not
+the main cause.
 
 Missing hours mean zero taps (stations closed at night), not unknown.
+
+Reproduce: `model/investigations/06_hourly_profiles.py`.
 
 ## 7. One database file for the AI
 
@@ -139,3 +152,6 @@ and ticket-type tables, and the warnings. Built by `model/build_*.py`.
 
 Checked by asking real questions: metro and train taps per year match the
 earlier results exactly, for all eleven years.
+
+All of the above is checked on every rebuild by `tests/test_model.py`, run by
+`build.py`.
