@@ -12,6 +12,7 @@
 # tricked into asking for something harmful; these functions must make sure
 # that whatever it asks for, nothing harmful can happen.
 
+import datetime
 import threading
 
 import duckdb
@@ -26,6 +27,10 @@ TIMEOUT_SECONDS = 10
 # reread at each later step, and a question is answered by a few totals, not
 # by thousands of raw rows.
 MAX_ROWS = 200
+
+# The period the tap data covers.
+FIRST_DAY = datetime.date(2015, 1, 1)
+LAST_DAY = datetime.date(2025, 12, 31)
 
 
 def connect():
@@ -161,6 +166,56 @@ def run_query(db, sql):
                      str(total) + " rows - aggregate or filter to see the rest)")
     else:
         lines.append("(" + str(total) + " rows)")
+    return "\n".join(lines)
+
+
+def warnings_for_period(db, start, end):
+    """The known problems in the data that overlap a period, as text.
+
+    start and end are dates written YYYY-MM-DD. The warnings come from the
+    warnings_between table macro built in Phase 4, so this tool and a query
+    the model writes itself always agree.
+    """
+    # Dates are checked here, before any SQL, so a mistake gets a message the
+    # model can act on instead of a database error.
+    try:
+        start_day = datetime.date.fromisoformat(start)
+        end_day = datetime.date.fromisoformat(end)
+    except (TypeError, ValueError):
+        return ("Error: start and end must be real dates written YYYY-MM-DD, "
+                "got '" + str(start) + "' and '" + str(end) + "'.")
+    if start_day > end_day:
+        return "Error: start (" + start + ") is after end (" + end + ")."
+
+    if end_day < FIRST_DAY or start_day > LAST_DAY:
+        return ("Error: there is no data between " + start + " and " + end +
+                ". The data covers " + str(FIRST_DAY) + " to " + str(LAST_DAY) + ".")
+
+    lines = []
+    if start_day < FIRST_DAY or end_day > LAST_DAY:
+        lines.append("Note: the data only covers " + str(FIRST_DAY) + " to " +
+                     str(LAST_DAY) + ". There are no taps outside that period.")
+
+    # The dates go in as query parameters, never pasted into the SQL.
+    rows = db.execute("""
+        SELECT flag_id, "table", affects, start_date, end_date, description,
+               rows_affected, taps_affected
+        FROM warnings_between($1, $2)
+        ORDER BY "table", flag_id
+    """, [start_day, end_day]).fetchall()
+
+    if not rows:
+        lines.append("No known problems between " + start + " and " + end + ".")
+        return "\n".join(lines)
+
+    lines.append(str(len(rows)) + " known problems between " + start + " and " + end + ":")
+    for flag_id, table, affects, first, last, description, n_rows, n_taps in rows:
+        size = format(n_rows, ",") + " rows"
+        if n_taps is not None:
+            size = size + ", " + format(n_taps, ",") + " taps"
+        lines.append("- " + flag_id + " (" + table + ", " + str(first) + " to " +
+                     str(last) + ", makes " + affects + " unreliable; " + size +
+                     "): " + description)
     return "\n".join(lines)
 
 
