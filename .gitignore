@@ -4,3 +4,9 @@ data/
 # Python
 __pycache__/
 .venv/
+
+# Secrets: the API key. Never committed.
+.env
+
+# What the agent did on each question, written by agent/agent.py
+runs/
