@@ -124,7 +124,7 @@ def ask(question, model="gpt-oss", client=None, db=None):
 def save(run, model):
     """Writes the whole run to runs/, as JSON, and returns the file name."""
     os.makedirs(RUNS, exist_ok=True)
-    stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
     path = RUNS + "/" + stamp + "_" + model + ".json"
     with open(path, "w", encoding="utf-8") as f:
         json.dump(run, f, ensure_ascii=False, indent=2, default=str)
