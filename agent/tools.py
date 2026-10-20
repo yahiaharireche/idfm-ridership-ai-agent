@@ -13,6 +13,7 @@
 # that whatever it asks for, nothing harmful can happen.
 
 import datetime
+import json
 import threading
 
 import duckdb
@@ -222,3 +223,139 @@ def warnings_for_period(db, start, end):
 def short(error):
     """A DuckDB error message, trimmed so it does not flood the model."""
     return str(error)[:500]
+
+
+# --- what the model is told about the tools ----------------------------------
+#
+# This list is sent to the model with every request. It is all the model knows
+# about the tools: it cannot read the code above. Each entry is a name, a
+# description saying what the tool does and when to use it, and the inputs it
+# takes, written in JSON Schema (type, meaning, required or not).
+
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "describe_database",
+            "description": (
+                "Lists what is in the ridership database. Without a table name: every "
+                "table, its size and what it holds. With a table name: every column of "
+                "that table, its type and its meaning. Use it before writing a query, "
+                "to get the exact table and column names."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "table": {
+                        "type": "string",
+                        "description": "A table name, e.g. fact_rail_daily. Leave out to list all tables.",
+                    },
+                },
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_query",
+            "description": (
+                "Runs one read-only SQL query on the ridership database (DuckDB SQL) and "
+                "returns the result as text. Only one SELECT statement is allowed. At most "
+                + str(MAX_ROWS) + " rows come back, with the total count when there are "
+                "more, and a query running longer than " + str(TIMEOUT_SECONDS) + " seconds "
+                "is stopped: aggregate with SUM, COUNT and GROUP BY rather than reading "
+                "raw rows. Errors come back as text starting with 'Error:'; read them and "
+                "fix the query."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "sql": {
+                        "type": "string",
+                        "description": "One SELECT statement.",
+                    },
+                },
+                "required": ["sql"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "warnings_for_period",
+            "description": (
+                "Lists the known problems in the data that overlap a period: what each "
+                "one makes unreliable (totals, per station, per line, per ticket "
+                "category, hourly shares) and how many rows and taps it covers. Use it "
+                "for the period of every question before giving an answer, and pass on "
+                "the warnings that apply. The data covers " + str(FIRST_DAY) + " to "
+                + str(LAST_DAY) + "."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "start": {
+                        "type": "string",
+                        "description": "First day of the period, written YYYY-MM-DD.",
+                    },
+                    "end": {
+                        "type": "string",
+                        "description": "Last day of the period, written YYYY-MM-DD.",
+                    },
+                },
+                "required": ["start", "end"],
+            },
+        },
+    },
+]
+
+
+def run_tool(db, name, arguments):
+    """Runs the tool the model asked for, and returns the result as text.
+
+    name and arguments are exactly what the model wrote: the arguments arrive
+    as JSON text, e.g. '{"sql": "SELECT 1"}'. Nothing in them is trusted. A
+    tool that does not exist, broken JSON, or a missing or unexpected input
+    all come back as an "Error:" message the model can act on, never a crash.
+    """
+    schema = None
+    for tool in TOOLS:
+        if tool["function"]["name"] == name:
+            schema = tool["function"]["parameters"]
+
+    names = []
+    for tool in TOOLS:
+        names.append(tool["function"]["name"])
+
+    if schema is None:
+        return ("Error: there is no tool called '" + str(name) + "'. "
+                "The tools are: " + ", ".join(names) + ".")
+
+    # --- the inputs: valid JSON, an object, the right names, all text ---
+    try:
+        inputs = json.loads(arguments or "{}")
+    except json.JSONDecodeError as error:
+        return "Error: the inputs are not valid JSON (" + str(error) + "). Send an object like {\"name\": \"value\"}."
+
+    if not isinstance(inputs, dict):
+        return "Error: the inputs must be a JSON object, like {\"name\": \"value\"}."
+
+    allowed = schema["properties"]
+    for key in inputs:
+        if key not in allowed:
+            return ("Error: " + name + " has no input called '" + key + "'. "
+                    "Its inputs are: " + (", ".join(allowed) or "none") + ".")
+    for key in schema["required"]:
+        if key not in inputs:
+            return "Error: " + name + " needs the input '" + key + "'."
+    for key, value in inputs.items():
+        if not isinstance(value, str):
+            return "Error: the input '" + key + "' must be text."
+
+    # --- run it ---
+    if name == "describe_database":
+        return describe_database(db, inputs.get("table"))
+    if name == "run_query":
+        return run_query(db, inputs["sql"])
+    return warnings_for_period(db, inputs["start"], inputs["end"])
