@@ -13,9 +13,13 @@ import openai
 BASE_URL = "https://openrouter.ai/api/v1"
 KEY_FILE = ".env"
 
-# The five models being compared: a short name used in this project, and the
-# exact name OpenRouter knows it by. Fixed versions only, never a "latest"
-# alias, so a model cannot silently change between two test runs.
+# The models tried: a short name used in this project, and the exact name
+# OpenRouter knows it by. Fixed versions only, never a "latest" alias, so a
+# model cannot silently change between two test runs.
+#
+# deepseek is the one the agent uses by default. It was chosen after two
+# comparisons (agent/compare.py, agent/stress.py): right on every trap
+# question, at about a tenth of the cost of the next best.
 MODELS = {
     "gpt-oss":  "openai/gpt-oss-120b",
     "qwen":     "qwen/qwen3.8-27b",

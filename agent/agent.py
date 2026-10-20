@@ -10,7 +10,7 @@
 #
 # Run from the project root:
 #   .venv/bin/python agent/agent.py "How many metro and train taps were there in 2019?"
-#   .venv/bin/python agent/agent.py --model glm "..."
+#   .venv/bin/python agent/agent.py --model qwen "..."
 
 import datetime
 import json
@@ -33,7 +33,7 @@ MAX_TOKENS = 4000
 RUNS = "runs"
 
 
-def ask(question, model="gpt-oss", client=None, db=None):
+def ask(question, model="deepseek", client=None, db=None):
     """Runs the agent on one question and returns what happened, as a dict."""
     client = client or llm.connect()
     db = db or tools.connect()
@@ -133,7 +133,7 @@ def save(run, model):
 
 if __name__ == "__main__":
     arguments = sys.argv[1:]
-    model = "gpt-oss"
+    model = "deepseek"
     if len(arguments) >= 2 and arguments[0] == "--model":
         model = arguments[1]
         arguments = arguments[2:]

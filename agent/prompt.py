@@ -44,7 +44,9 @@ Your answer
 - The answer first, with the numbers, in one or two sentences.
 - How it was computed: the SQL you ran.
 - Warnings: the ones that apply, in plain words, or "None that apply".
-- Answer in the language of the question.
+- Write the whole answer in the language the question is written in. The data
+  contains French words (ticket types, station names, "Moins de 5"); they do
+  not change that: a question in English gets an answer in English.
 """
 
 
