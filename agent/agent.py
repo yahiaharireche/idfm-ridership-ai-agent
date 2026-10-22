@@ -48,11 +48,22 @@ def ask(question, model="deepseek", client=None, db=None):
 
     for step in range(1, MAX_STEPS + 1):
         step_started = time.time()
+
+        # On the last step, no more tools: the model must answer with what it
+        # has, rather than be cut off with nothing (which happened in the
+        # evaluation, on questions where it kept exploring).
+        last = step == MAX_STEPS
+        if last:
+            messages.append({"role": "user", "content": (
+                "Step limit reached: no more tools. Answer now with what you have found, "
+                "and say plainly what remains uncertain.")})
+
         try:
             response = client.chat.completions.create(
                 model=llm.MODELS[model],
                 messages=messages,
                 tools=tools.TOOLS,
+                tool_choice="none" if last else "auto",
                 max_tokens=MAX_TOKENS,
                 # OpenRouter-specific: among the companies serving this model,
                 # prefer the fastest one. By default it prefers the cheapest,

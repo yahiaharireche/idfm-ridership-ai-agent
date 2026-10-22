@@ -49,11 +49,13 @@ class FakeClient:
     def __init__(self, replies):
         self.replies = list(replies)
         self.sent = []
+        self.tool_choices = []
         self.chat = self
         self.completions = self
 
     def create(self, **request):
         self.sent.append(copy.deepcopy(request["messages"]))
+        self.tool_choices.append(request.get("tool_choice"))
         if len(self.replies) > 1:
             return ChatCompletion.model_validate(self.replies.pop(0))
         return ChatCompletion.model_validate(self.replies[0])
@@ -170,6 +172,23 @@ def test_a_model_that_never_answers_is_stopped(db):
     run = agent.ask("question", "deepseek", client, db)
     assert run["steps"] == agent.MAX_STEPS
     assert run["answer"] == "Stopped: no answer after " + str(agent.MAX_STEPS) + " steps."
+
+
+def test_last_step_must_be_an_answer(db):
+    # On the last step tools are switched off and the model is told to answer.
+    client = FakeClient([reply(calls=[("c", "run_query", '{"sql": "SELECT 1"}')])])
+    agent.ask("question", "deepseek", client, db)
+    assert client.tool_choices[:-1] == ["auto"] * (agent.MAX_STEPS - 1)
+    assert client.tool_choices[-1] == "none"
+    assert client.sent[-1][-1]["content"].startswith("Step limit reached")
+
+
+def test_a_model_that_answers_at_the_limit_is_not_stopped(db):
+    replies = [reply(calls=[("c", "run_query", '{"sql": "SELECT 1"}')])] * (agent.MAX_STEPS - 1)
+    client = FakeClient(replies + [reply("Here is what I found.")])
+    run = agent.ask("question", "deepseek", client, db)
+    assert run["answer"] == "Here is what I found."
+    assert run["steps"] == agent.MAX_STEPS
 
 
 def test_unreachable_service(db):
