@@ -1,0 +1,97 @@
+{
+  "runs": 20,
+  "pass_rate": 95.0,
+  "not_graded": 0,
+  "groups": {
+    "analyst": 100.0,
+    "communications": 100.0,
+    "planner": 75.0,
+    "trap": 100.0
+  },
+  "checks": {
+    "language": 100.0,
+    "mentions_1": 100.0,
+    "mentions_2": 100.0,
+    "names": 100.0,
+    "numbers": 100.0,
+    "percent": 100.0
+  },
+  "judge": {
+    "correct": 100.0,
+    "warnings": 95.0,
+    "honest": 100.0,
+    "unreadable": 0
+  },
+  "questions": {
+    "rail_totals": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "yearly_growth": {
+      "passed": "1/2",
+      "pass_rate": 50.0,
+      "failed_checks": [],
+      "judge_reasons": [
+        "Numbers and honesty are fine, but the understatement bound is wrong: 286,516 hidden rows allow up to about 1.1-1.4M missing taps (~0.08% of totals), not 'a few hundred thousand, under 0.04%'."
+      ]
+    },
+    "december_2019": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "lines_2015": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "chatelet_hour": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "gare_de_lyon_8am": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "bus38_2016": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "people_metro": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "la_defense": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "hourly_count": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    }
+  },
+  "consistency": 90.0,
+  "cost_total": 0.2013,
+  "cost_per_question": 0.0101,
+  "steps_median": 4,
+  "label": "after_fix",
+  "date": "2026-10-22T23:15:28",
+  "runs_not_started": 8,
+  "minutes": 2.1
+}

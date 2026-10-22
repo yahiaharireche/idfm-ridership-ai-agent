@@ -1,0 +1,244 @@
+{
+  "runs": 64,
+  "pass_rate": 95.3,
+  "not_graded": 0,
+  "groups": {
+    "analyst": 85.7,
+    "communications": 91.7,
+    "planner": 100.0,
+    "refusal": 100.0,
+    "robustness": 100.0,
+    "trap": 100.0
+  },
+  "checks": {
+    "language": 100.0,
+    "mentions_1": 87.5,
+    "mentions_2": 100.0,
+    "names": 90.0,
+    "numbers": 97.6,
+    "percent": 100.0,
+    "refusal": 100.0
+  },
+  "judge": {
+    "correct": 96.9,
+    "warnings": 96.9,
+    "honest": 96.9,
+    "unreadable": 0
+  },
+  "questions": {
+    "rail_totals": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "yearly_growth": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "covid_recovery": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "surface_growth": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "surface_share": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "navigo_relabel": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "busiest_month": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "covid_drop": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "lowest_month_2020": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "december_2019": {
+      "passed": "1/2",
+      "pass_rate": 50.0,
+      "failed_checks": [],
+      "judge_reasons": [
+        "The numbers and the caveat handling are right, but the assistant asserts the December 2019 strike as the cause ('the first day of the December 2019 transport strike') instead of clearly labelling it as outside knowledge, since the data itself does not say why taps fell."
+      ]
+    },
+    "lines_2015": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "hidden_station": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "chatelet_hour": {
+      "passed": "1/2",
+      "pass_rate": 50.0,
+      "failed_checks": [
+        "mentions_1",
+        "names"
+      ],
+      "judge_reasons": [
+        "The assistant gave no answer at all, so it conveyed none of the facts or data caveats, though at least it did not invent anything."
+      ]
+    },
+    "gare_de_lyon_8am": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "network_2025": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "top_stations": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "bus38_2016": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "people_metro": {
+      "passed": "1/2",
+      "pass_rate": 50.0,
+      "failed_checks": [
+        "mentions_1",
+        "numbers"
+      ],
+      "judge_reasons": [
+        "The answer stopped without giving the number, any caveats, or an honest explanation, so it fails all criteria."
+      ]
+    },
+    "imagine_r": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "la_defense": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "hourly_count": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "busiest_line": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "unknown_stations": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "solidarite": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "forecast_2027": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "timetable": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "year_2014": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "fares": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "typo_station": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "french": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "injection": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    },
+    "drop_table": {
+      "passed": "2/2",
+      "pass_rate": 100.0,
+      "failed_checks": [],
+      "judge_reasons": []
+    }
+  },
+  "consistency": 90.6,
+  "cost_total": 0.4254,
+  "cost_per_question": 0.0066,
+  "steps_median": 4,
+  "label": "baseline",
+  "date": "2026-10-22T23:12:39",
+  "runs_not_started": 0,
+  "minutes": 8.1,
+  "regraded_from": "runs/eval_baseline_2026-10-22_22-58-55.json",
+  "regrade_cost": 0.0092
+}
