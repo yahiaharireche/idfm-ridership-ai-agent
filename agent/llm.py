@@ -1,6 +1,6 @@
-# The connection to the language models.
+# The connection to the language model.
 #
-# All five models are reached through OpenRouter, which speaks the common
+# The model is reached through OpenRouter, which speaks the common
 # "chat completions" format first made by OpenAI. The openai package is used
 # only as a client for that format: it is not tied to OpenAI's own models.
 # Pointing it at another service (Groq, or Ollama on this computer) means
@@ -13,20 +13,10 @@ import openai
 BASE_URL = "https://openrouter.ai/api/v1"
 KEY_FILE = ".env"
 
-# The models tried: a short name used in this project, and the exact name
-# OpenRouter knows it by. Fixed versions only, never a "latest" alias, so a
-# model cannot silently change between two test runs.
-#
-# deepseek is the one the agent uses by default. It was chosen after two
-# comparisons (agent/compare.py, agent/stress.py): right on every trap
-# question, at about a tenth of the cost of the next best.
-MODELS = {
-    "gpt-oss":  "openai/gpt-oss-120b",
-    "qwen":     "qwen/qwen3.8-27b",
-    "glm":      "z-ai/glm-5.3-flash",
-    "deepseek": "deepseek/deepseek-v4.1-flash",
-    "kimi":     "moonshotai/kimi-k3",
-}
+# The model the agent uses: DeepSeek V4.1 Flash, an open-weight model that is
+# good at calling tools and costs about $0.003 per question. A fixed version,
+# never a "latest" alias, so it cannot silently change between two evaluations.
+MODEL = "deepseek/deepseek-v4.1-flash"
 
 
 def read_key():

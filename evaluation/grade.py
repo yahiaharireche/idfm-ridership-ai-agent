@@ -11,10 +11,10 @@ import re
 
 from agent import llm
 
-# The judge is a different model family from the one answering: a model tends
-# to grade its own way of writing too kindly. It is also the cheapest model
-# tried, and only has to compare an answer with facts it is given.
-JUDGE_MODEL = "glm"
+# The judge is GLM-5.3 Flash, a different model family from the one answering:
+# a model tends to grade its own way of writing too kindly. It is cheap, and
+# only has to compare an answer with facts it is given.
+JUDGE_MODEL = "z-ai/glm-5.3-flash"
 
 REFUSAL_WORDS = [
     "cannot", "can't", "can not", "not possible", "impossible", "no data", "not in the data",
@@ -141,7 +141,7 @@ def judge(client, item, expected_numbers, answer):
                                  numbers=numbers, answer=answer)
     try:
         response = client.chat.completions.create(
-            model=llm.MODELS[JUDGE_MODEL],
+            model=JUDGE_MODEL,
             messages=[{"role": "user", "content": prompt}],
             # Little "thinking": the judge only compares an answer with facts it
             # is given. With its default thinking, it sometimes spent all its

@@ -1,5 +1,5 @@
 # Checks the judge before trusting it: six answers whose right verdict is
-# known, modelled on real mistakes seen in Phase 6. If the judge does not
+# known, modelled on real mistakes a model can make. If the judge does not
 # agree with them, its scores in the evaluation mean nothing.
 #
 # Costs about $0.003. Run from the project root:
@@ -21,7 +21,7 @@ CASES = [
      "Bus line 38 had 4,660,528 taps in 2016. Warnings: until mid-2017 many bus taps were "
      "not attributed to any line, so this per-line figure may be too low.",
      (True, True, True)),
-    ("bus38_2016",   # gpt-oss and GLM in Phase 6: right number, key warning missed
+    ("bus38_2016",   # right number, but the key warning missed
      "Bus line 38 had 4,660,528 taps in 2016. Warnings: none that apply, line 38 is a "
      "matched line so the total is complete.",
      (True, False, False)),   # claiming "complete" is a certainty the data does not support
@@ -29,7 +29,7 @@ CASES = [
      "Navigo taps on metro and trains: 891,373,878 in 2022 and 1,015,278,420 in 2024. Ticket "
      "labels changed on 2023-07-01, but Navigo maps exactly across that date, so the comparison holds.",
      (True, True, True)),
-    ("navigo_relabel",   # GLM in Phase 6: a wrong caveat presented as true
+    ("navigo_relabel",   # a wrong caveat presented as true
      "Navigo taps on metro and trains: 891,373,878 in 2022 and 1,015,278,420 in 2024. The 2023 "
      "relabelling merged several ticket types into Navigo, so the two years are only roughly comparable.",
      (True, False, False)),   # states as fact a merge that never happened

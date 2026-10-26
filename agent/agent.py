@@ -10,7 +10,6 @@
 #
 # Run from the project root:
 #   .venv/bin/python agent/agent.py "How many metro and train taps were there in 2019?"
-#   .venv/bin/python agent/agent.py --model qwen "..."
 
 import datetime
 import json
@@ -33,7 +32,7 @@ MAX_TOKENS = 4000
 RUNS = "runs"
 
 
-def ask(question, model="deepseek", client=None, db=None):
+def ask(question, client=None, db=None):
     """Runs the agent on one question and returns what happened, as a dict."""
     client = client or llm.connect()
     db = db or tools.connect()
@@ -60,7 +59,7 @@ def ask(question, model="deepseek", client=None, db=None):
 
         try:
             response = client.chat.completions.create(
-                model=llm.MODELS[model],
+                model=llm.MODEL,
                 messages=messages,
                 tools=tools.TOOLS,
                 tool_choice="none" if last else "auto",
@@ -120,7 +119,7 @@ def ask(question, model="deepseek", client=None, db=None):
 
     run = {
         "question": question,
-        "model": llm.MODELS[model],
+        "model": llm.MODEL,
         "answer": answer,
         "steps": len(steps),
         "seconds": round(time.time() - started, 1),
@@ -128,31 +127,25 @@ def ask(question, model="deepseek", client=None, db=None):
         "step_details": steps,
         "messages": messages,
     }
-    run["file"] = save(run, model)
+    run["file"] = save(run)
     return run
 
 
-def save(run, model):
+def save(run):
     """Writes the whole run to runs/, as JSON, and returns the file name."""
     os.makedirs(RUNS, exist_ok=True)
     stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
-    path = RUNS + "/" + stamp + "_" + model + ".json"
+    path = RUNS + "/" + stamp + ".json"
     with open(path, "w", encoding="utf-8") as f:
         json.dump(run, f, ensure_ascii=False, indent=2, default=str)
     return path
 
 
 if __name__ == "__main__":
-    arguments = sys.argv[1:]
-    model = "deepseek"
-    if len(arguments) >= 2 and arguments[0] == "--model":
-        model = arguments[1]
-        arguments = arguments[2:]
+    if len(sys.argv) != 2:
+        raise SystemExit('Usage: agent/agent.py "question"')
 
-    if len(arguments) != 1 or model not in llm.MODELS:
-        raise SystemExit('Usage: agent/agent.py [--model ' + "|".join(llm.MODELS) + '] "question"')
-
-    run = ask(arguments[0], model)
+    run = ask(sys.argv[1])
     print()
     print(run["answer"])
     print()

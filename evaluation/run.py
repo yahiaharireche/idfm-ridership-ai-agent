@@ -82,7 +82,7 @@ def start_worker():
 def run_job(job):
     """Ask one question once, and grade the answer. Runs inside a worker."""
     item, attempt, expected = job
-    run = agent.ask(item["question"], "deepseek", worker_client, worker_db)
+    run = agent.ask(item["question"], worker_client, worker_db)
     checks = grade.checks(item, expected, run["answer"])
     verdict, judge_cost, reason = grade.judge(worker_client, item, expected, run["answer"])
     return {

@@ -36,7 +36,7 @@ An answer passes when every check passes and the judge agrees on all three.
 ## Trusting the judge
 
 A judge can be wrong. `calibrate_judge.py` gives it six answers whose verdict
-is known, modelled on real mistakes seen while choosing the model. It agreed
+is known, modelled on real mistakes a model can make. It agreed
 on the pass or fail verdict in all six; on two it was stricter than the first
 labels (an answer that wrongly claims a total is "complete" is also not
 honest), and the labels were changed to its reading. Before relying on a new

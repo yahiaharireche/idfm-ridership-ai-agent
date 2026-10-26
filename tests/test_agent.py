@@ -93,7 +93,7 @@ def tool_messages(conversation):
 
 def test_answer_without_tools(db):
     client = FakeClient([reply("Hello.")])
-    run = agent.ask("Hi", "deepseek", client, db)
+    run = agent.ask("Hi", client, db)
     assert run["answer"] == "Hello."
     assert run["steps"] == 1
     assert run["cost"] == pytest.approx(0.001)
@@ -101,7 +101,7 @@ def test_answer_without_tools(db):
 
 def test_instructions_come_first(db):
     client = FakeClient([reply("ok")])
-    agent.ask("Hi", "deepseek", client, db)
+    agent.ask("Hi", client, db)
     first = client.sent[0]
     assert first[0]["role"] == "system"
     assert "fact_rail_daily" in first[0]["content"]    # the table list is included
@@ -113,7 +113,7 @@ def test_tool_result_goes_back_with_its_id(db):
         reply(calls=[("call_1", "run_query", '{"sql": "SELECT 41 + 1 AS n"}')]),
         reply("The answer is 42."),
     ])
-    run = agent.ask("question", "deepseek", client, db)
+    run = agent.ask("question", client, db)
     results = tool_messages(client.sent[1])
     assert len(results) == 1
     assert results[0]["tool_call_id"] == "call_1"
@@ -128,7 +128,7 @@ def test_several_tools_in_one_reply(db):
                      ("b", "warnings_for_period", '{"start": "2016-01-01", "end": "2016-01-31"}')]),
         reply("done"),
     ])
-    agent.ask("question", "deepseek", client, db)
+    agent.ask("question", client, db)
     results = tool_messages(client.sent[1])
     assert [r["tool_call_id"] for r in results] == ["a", "b"]
     assert "known problems" in results[1]["content"]
@@ -140,7 +140,7 @@ def test_reasoning_is_sent_back(db):
         reply(calls=[("c", "run_query", '{"sql": "SELECT 1"}')], extra={"reasoning": "I should query."}),
         reply("done"),
     ])
-    agent.ask("question", "deepseek", client, db)
+    agent.ask("question", client, db)
     assistant = client.sent[1][2]
     assert assistant["role"] == "assistant"
     assert assistant["reasoning"] == "I should query."
@@ -153,7 +153,7 @@ def test_invented_tool_gets_an_error_and_the_loop_goes_on(db):
         reply(calls=[("c", "apply_patch", '{"patch": "x"}')]),
         reply("Sorry, done."),
     ])
-    run = agent.ask("question", "deepseek", client, db)
+    run = agent.ask("question", client, db)
     assert tool_messages(client.sent[1])[0]["content"].startswith("Error: there is no tool")
     assert run["answer"] == "Sorry, done."
 
@@ -163,13 +163,13 @@ def test_bad_inputs_get_an_error(db):
         reply(calls=[("c", "run_query", '{"sql": "SELECT 1"')]),   # broken JSON
         reply("done"),
     ])
-    agent.ask("question", "deepseek", client, db)
+    agent.ask("question", client, db)
     assert "not valid JSON" in tool_messages(client.sent[1])[0]["content"]
 
 
 def test_a_model_that_never_answers_is_stopped(db):
     client = FakeClient([reply(calls=[("c", "run_query", '{"sql": "SELECT 1"}')])])
-    run = agent.ask("question", "deepseek", client, db)
+    run = agent.ask("question", client, db)
     assert run["steps"] == agent.MAX_STEPS
     assert run["answer"] == "Stopped: no answer after " + str(agent.MAX_STEPS) + " steps."
 
@@ -177,7 +177,7 @@ def test_a_model_that_never_answers_is_stopped(db):
 def test_last_step_must_be_an_answer(db):
     # On the last step tools are switched off and the model is told to answer.
     client = FakeClient([reply(calls=[("c", "run_query", '{"sql": "SELECT 1"}')])])
-    agent.ask("question", "deepseek", client, db)
+    agent.ask("question", client, db)
     assert client.tool_choices[:-1] == ["auto"] * (agent.MAX_STEPS - 1)
     assert client.tool_choices[-1] == "none"
     assert client.sent[-1][-1]["content"].startswith("Step limit reached")
@@ -186,20 +186,20 @@ def test_last_step_must_be_an_answer(db):
 def test_a_model_that_answers_at_the_limit_is_not_stopped(db):
     replies = [reply(calls=[("c", "run_query", '{"sql": "SELECT 1"}')])] * (agent.MAX_STEPS - 1)
     client = FakeClient(replies + [reply("Here is what I found.")])
-    run = agent.ask("question", "deepseek", client, db)
+    run = agent.ask("question", client, db)
     assert run["answer"] == "Here is what I found."
     assert run["steps"] == agent.MAX_STEPS
 
 
 def test_unreachable_service(db):
-    run = agent.ask("question", "deepseek", BrokenClient([]), db)
+    run = agent.ask("question", BrokenClient([]), db)
     assert run["answer"].startswith("Stopped: the model could not be reached")
     assert run["steps"] == 0
 
 
 def test_answer_cut_off_is_flagged(db):
     client = FakeClient([reply("Half an ans", finish="length")])
-    run = agent.ask("question", "deepseek", client, db)
+    run = agent.ask("question", client, db)
     assert "[Cut off" in run["answer"]
 
 
@@ -210,7 +210,7 @@ def test_every_run_is_saved(db):
         reply(calls=[("c", "run_query", '{"sql": "SELECT 1 AS x"}')]),
         reply("done"),
     ])
-    run = agent.ask("What is x?", "deepseek", client, db)
+    run = agent.ask("What is x?", client, db)
     assert os.path.exists(run["file"])
     saved = json.load(open(run["file"], encoding="utf-8"))
     assert saved["question"] == "What is x?"
