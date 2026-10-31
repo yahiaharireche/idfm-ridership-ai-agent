@@ -1,0 +1,19 @@
+# How to run the image on this computer: docker compose up --build
+# Then open http://localhost:7860
+
+services:
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:7860:7860"   # reachable from this computer only
+    env_file: .env              # the API key, given when the container starts
+    environment:
+      AGENT_MEMORY_LIMIT: 1GB   # DuckDB's share, below the container's limit
+    mem_limit: 2g
+    volumes:
+      - ./data/model/ridership_serving.duckdb:/data/ridership_serving.duckdb:ro
+      - app-state:/state        # survives when the container is replaced
+    restart: unless-stopped
+
+volumes:
+  app-state:

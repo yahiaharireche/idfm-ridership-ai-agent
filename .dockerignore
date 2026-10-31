@@ -1,0 +1,7 @@
+# Keep everything out of the image, then let in only what the app needs. A new
+# file, like a secret, stays out unless it is listed here.
+*
+!requirements.txt
+!app.py
+!agent/
+**/__pycache__
