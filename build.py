@@ -37,6 +37,7 @@ BUILD = [
     "model/build_facts.py",           #          the final tables, with their keys
     "model/build_quality_flags.py",   #          the warnings
     "model/build_descriptions.py",    #          a description on every column
+    "model/build_serving.py",         # Phase 9: the smaller copy the app reads
 ]
 
 steps = []

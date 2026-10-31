@@ -197,10 +197,109 @@ def test_unreachable_service(db):
     assert run["steps"] == 0
 
 
+def test_the_user_never_sees_the_technical_error(db):
+    run = agent.ask("question", BrokenClient([]), db)
+    assert "network down" not in run["answer"]
+    assert "network down" in run["error"]    # it stays in the saved run
+
+
+def test_a_reply_without_an_answer_is_a_service_failure(db):
+    # A service in trouble can reply normally, with nothing in the reply.
+    broken = reply("x")
+    broken["choices"] = []
+    run = agent.ask("question", FakeClient([broken]), db)
+    assert run["answer"] == agent.UNAVAILABLE
+    assert run["cost"] == agent.UNKNOWN_STEP_COST    # it may have been charged
+
+
+def test_an_empty_reply_says_so(db):
+    run = agent.ask("question", FakeClient([reply("")]), db)
+    assert run["answer"].startswith("Stopped: the model returned an empty reply")
+
+
 def test_answer_cut_off_is_flagged(db):
     client = FakeClient([reply("Half an ans", finish="length")])
     run = agent.ask("question", client, db)
     assert "[Cut off" in run["answer"]
+
+
+# --- the question itself ---
+
+@pytest.mark.parametrize("question", ["", "   \n ", None])
+def test_empty_question_is_refused_for_free(db, question):
+    client = FakeClient([reply("should not be called")])
+    run = agent.ask(question, client, db)
+    assert run["answer"] == "Please type a question."
+    assert client.sent == []
+    assert run["cost"] == 0
+
+
+def test_long_question_is_refused_for_free(db):
+    client = FakeClient([reply("should not be called")])
+    run = agent.ask("x" * (agent.MAX_QUESTION_LENGTH + 1), client, db)
+    assert "too long" in run["answer"]
+    assert client.sent == []
+
+
+def test_a_refused_question_needs_no_key_or_database(monkeypatch):
+    # Refused before anything is connected.
+    def must_not_run():
+        raise AssertionError("connected")
+    monkeypatch.setattr(agent.llm, "connect", must_not_run)
+    monkeypatch.setattr(agent.tools, "connect", must_not_run)
+    assert agent.ask("")["answer"] == "Please type a question."
+
+
+def test_question_at_the_limit_is_accepted(db):
+    run = agent.ask("x" * agent.MAX_QUESTION_LENGTH, FakeClient([reply("ok")]), db)
+    assert run["answer"] == "ok"
+
+
+# --- the cost limit ---
+
+def costly(cost, **fields):
+    built = reply(**fields)
+    built["usage"]["cost"] = cost
+    return built
+
+
+TOOL_CALL = [("c", "run_query", '{"sql": "SELECT 1"}')]
+
+
+def test_cost_limit_forces_an_answer(db):
+    client = FakeClient([costly(0.03, calls=TOOL_CALL), costly(0.03, calls=TOOL_CALL), costly(0.01, content="What I have.")])
+    run = agent.ask("question", client, db)
+    assert run["answer"] == "What I have."
+    assert run["limit_reached"] == "cost"
+    assert run["steps"] == 3
+    assert client.tool_choices == ["auto", "auto", "none"]
+    assert client.sent[-1][-1]["content"].startswith("Cost limit reached")
+
+
+def test_under_the_cost_limit_nothing_changes(db):
+    client = FakeClient([costly(0.01, calls=TOOL_CALL), costly(0.01, content="Done.")])
+    run = agent.ask("question", client, db)
+    assert run["limit_reached"] is None
+    assert client.tool_choices == ["auto", "auto"]
+
+
+def test_tools_are_not_run_once_told_to_answer(db):
+    # A model that asks for tools anyway is stopped, and its call never runs.
+    forced = costly(0.01, calls=[("x", "run_query", '{"sql": "SELECT 2"}')])
+    client = FakeClient([costly(0.06, calls=TOOL_CALL), forced])
+    run = agent.ask("question", client, db)
+    assert run["answer"].startswith("Stopped: the cost limit")
+    assert run["step_details"][-1]["tool_calls"] == []
+    assert run["steps"] == 2
+
+
+def test_unreported_cost_still_counts(db):
+    # If the service stops reporting costs, the limit must still work.
+    silent = reply(calls=TOOL_CALL)
+    del silent["usage"]["cost"]
+    run = agent.ask("question", FakeClient([silent]), db)
+    assert run["limit_reached"] == "cost"
+    assert run["cost"] >= agent.MAX_COST
 
 
 # --- the trace ---

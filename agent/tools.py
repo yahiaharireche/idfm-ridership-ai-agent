@@ -18,7 +18,9 @@ import threading
 
 import duckdb
 
-DATABASE = "data/model/ridership.duckdb"
+from agent import settings
+
+DATABASE = settings.DATABASE
 
 # A query running longer than this is stopped. The biggest sensible query here
 # (a sum over all 20 million rail rows) takes under a second.
@@ -34,7 +36,7 @@ FIRST_DAY = datetime.date(2015, 1, 1)
 LAST_DAY = datetime.date(2025, 12, 31)
 
 
-def connect():
+def connect(database=None):
     """A connection that can only read the ridership database.
 
     read_only               nothing can be created, changed or deleted
@@ -46,9 +48,9 @@ def connect():
 
     The progress bar is turned off too: it only clutters the terminal.
     """
-    db = duckdb.connect(DATABASE, read_only=True, config={
+    db = duckdb.connect(database or DATABASE, read_only=True, config={
         "enable_external_access": False,
-        "memory_limit": "4GB",
+        "memory_limit": settings.MEMORY_LIMIT,
     })
     # These two can only be set once connected. The lock goes last, so it
     # freezes everything above it.

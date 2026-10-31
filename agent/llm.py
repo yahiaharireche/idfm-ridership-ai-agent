@@ -20,14 +20,19 @@ MODEL = "deepseek/deepseek-v4.1-flash"
 
 
 def read_key():
-    """The OpenRouter key, from .env.
+    """The OpenRouter key: from the environment if set there, otherwise from .env.
 
-    .env is listed in .gitignore, so the key stays on this computer and never
-    reaches GitHub. It is read here rather than written in the code for the
-    same reason.
+    A server has no .env file: its key comes from its secrets settings, as an
+    environment variable. On this computer, .env is listed in .gitignore, so
+    the key never reaches GitHub. Either way it is never written in the code.
     """
+    key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if key:
+        return key
+
     if not os.path.exists(KEY_FILE):
-        raise SystemExit("No " + KEY_FILE + " file. Create it with one line: OPENROUTER_API_KEY=...")
+        raise SystemExit("No OPENROUTER_API_KEY variable and no " + KEY_FILE + " file. "
+                         "Create the file with one line: OPENROUTER_API_KEY=...")
 
     for line in open(KEY_FILE, encoding="utf-8"):
         line = line.strip()
