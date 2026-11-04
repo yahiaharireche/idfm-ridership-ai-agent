@@ -19,7 +19,10 @@ COPY app.py .
 RUN useradd --create-home app && mkdir /state && chown app /state
 USER app
 
-ENV AGENT_HOST=0.0.0.0 \
+# PYTHONUNBUFFERED: messages reach `docker compose logs` at once, instead of
+# waiting in memory and being lost if the app crashes.
+ENV PYTHONUNBUFFERED=1 \
+    AGENT_HOST=0.0.0.0 \
     AGENT_DATABASE=/data/ridership_serving.duckdb \
     AGENT_LIMITS_DATABASE=/state/limits.sqlite \
     AGENT_RUNS_FOLDER=/state/runs
